@@ -18,12 +18,8 @@
 
 namespace bit {
 
-template <class InputIt, class T>
-constexpr bit_iterator<InputIt> find(bit_iterator<InputIt> first,
-    bit_iterator<InputIt> last, const T& value) {
-    return std::find(first, last, value); 
-}
-
+// Status: needs improvement
+// Notes: expensive use of get_word 
 template <class InputIt>
 constexpr bit_iterator<InputIt> find(bit_iterator<InputIt> first,
     bit_iterator<InputIt> last, bit::bit_value bv) {
@@ -56,6 +52,7 @@ constexpr bit_iterator<InputIt> find(bit_iterator<InputIt> first,
     return first + bits_scanned;
 }
 
+// Status: complete
 template <class InputIt>
 constexpr bit_iterator<InputIt> find(bit_iterator<InputIt> first,
     bit_iterator<InputIt> last, 
@@ -64,7 +61,7 @@ constexpr bit_iterator<InputIt> find(bit_iterator<InputIt> first,
 }
 
 
-// TODO
+// Status: to do
 template <class ExecutionPolicy, class ForwardIt, class T>
 bit_iterator<ForwardIt> find(ExecutionPolicy&& policy, 
     bit_iterator<ForwardIt> first, bit_iterator<ForwardIt> last, const T& value) {
@@ -72,38 +69,34 @@ bit_iterator<ForwardIt> find(ExecutionPolicy&& policy,
     return first;
 }
 
-// TODO
+// Status: complete
 template <class InputIt, class UnaryPredicate>
 constexpr bit_iterator<InputIt> find_if(bit_iterator<InputIt> first,
     bit_iterator<InputIt> last, UnaryPredicate p) {
-    (last, p);
-    return first;
+    return std::find_if(first, last, p);
 }
 
-// TODO
+// Status: complete
 template <class ExecutionPolicy, class ForwardIt, class UnaryPredicate>
 bit_iterator<ForwardIt> find_if(ExecutionPolicy&& policy, 
     bit_iterator<ForwardIt> first, bit_iterator<ForwardIt> last,
     UnaryPredicate p) {
-    (policy, last, p);
-    return first;
+    return std::find_if(std::forward<ExecutionPolicy>(policy), first, last, p);
 }
 
-// TODO
+// Status: complete
 template <class InputIt, class UnaryPredicate>
 constexpr bit_iterator<InputIt> find_if_not(bit_iterator<InputIt> first,
     bit_iterator<InputIt> last, UnaryPredicate q) {
-    (last, q);
-    return first;
+    return std::find_if_not(first, last, q);
 }
 
-// TODO
+// Status: complete
 template <class ExecutionPolicy, class ForwardIt, class UnaryPredicate>
 bit_iterator<ForwardIt> find_if_not(ExecutionPolicy&& policy,
     bit_iterator<ForwardIt> first, bit_iterator<ForwardIt> last,
     UnaryPredicate q) {
-    (policy, last, q); 
-    return first;
+    return std::find_if_not(std::forward<ExecutionPolicy>(policy), first, last, q);
 }
 
 // ========================================================================== //

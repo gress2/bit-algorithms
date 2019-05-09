@@ -15,21 +15,21 @@
 // Project sources
 // Third-party libraries
 // Miscellaneous
-
 namespace bit {
+// ========================================================================== //
 
-// TODO
+// Status: complete
 template <class ForwardIt, class Generator>
 constexpr void generate(bit_iterator<ForwardIt> first, 
     bit_iterator<ForwardIt> last, Generator g) {
-    (first, last, g);
+    return std::generate(first, last, g);
 }
 
-// TODO
+// Status: complete
 template <class ExecutionPolicy, class ForwardIt, class Generator>
 void generate(ExecutionPolicy&& policy, bit_iterator<ForwardIt> first,
     bit_iterator<ForwardIt> last, Generator g) {
-    (policy, first, last, g);
+    return std::generate(std::forward<ExecutionPolicy>(policy), first, last, g);
 }
 
 

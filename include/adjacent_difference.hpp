@@ -18,13 +18,15 @@
 
 namespace bit {
 
-// TODO
+/* Status: will not implement
+ * Notes: involves unsupported arithmetic of bit values
 template <class InputIt, class OutputIt>
 constexpr OutputIt adjacent_difference(bit_iterator<InputIt> first,
     bit_iterator<InputIt> last, OutputIt d_first) {
     (first, last);
     return d_first;
 }
+*/
 
 // TODO
 template <class ExecutionPolicy, class ForwardIt1, class ForwardIt2>

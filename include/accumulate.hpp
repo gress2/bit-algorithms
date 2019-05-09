@@ -18,14 +18,16 @@
 
 namespace bit {
 
-// TODO
+/* Status: will not implement
+ * Notes: involves unsupported arithmetic of bit values
 template <class InputIt, class T>
 T accumulate(bit_iterator<InputIt> first, bit_iterator<InputIt> last, T init) {
     (first, last);
     return init;
 }
+*/
 
-// TODO
+// Status: to do
 template <class InputIt, class T, class BinaryOperation>
 T accumulate(bit_iterator<InputIt> first, bit_iterator<InputIt> last, T init,
     BinaryOperation op) {

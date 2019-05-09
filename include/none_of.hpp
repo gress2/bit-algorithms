@@ -15,8 +15,8 @@
 // Project sources
 // Third-party libraries
 // Miscellaneous
-
 namespace bit {
+// ========================================================================== //
 
 template <class InputIt, class UnaryPredicate>
 constexpr bool none_of(bit_iterator<InputIt> first, bit_iterator<InputIt> last,

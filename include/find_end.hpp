@@ -15,10 +15,10 @@
 // Project sources
 // Third-party libraries
 // Miscellaneous
-
 namespace bit {
+// ========================================================================== //
 
-// TODO
+// Status: to do
 template <class ForwardIt1, class ForwardIt2>
 constexpr bit_iterator<ForwardIt1> find_end(bit_iterator<ForwardIt1> first,
     bit_iterator<ForwardIt1> last, bit_iterator<ForwardIt2> s_first,
@@ -27,7 +27,7 @@ constexpr bit_iterator<ForwardIt1> find_end(bit_iterator<ForwardIt1> first,
     return first;
 }
 
-// TODO
+// Status: to do
 template <class ExecutionPolicy, class ForwardIt1, class ForwardIt2>
 bit_iterator<ForwardIt1> find_end(ExecutionPolicy&& policy,
     bit_iterator<ForwardIt1> first, bit_iterator<ForwardIt1> last,
@@ -36,23 +36,23 @@ bit_iterator<ForwardIt1> find_end(ExecutionPolicy&& policy,
     return first;
 }
 
-// TODO
+// Status: complete
 template <class ForwardIt1, class ForwardIt2,  class BinaryPredicate>
 constexpr bit_iterator<ForwardIt1> find_end(bit_iterator<ForwardIt1> first,
     bit_iterator<ForwardIt1> last, bit_iterator<ForwardIt2> s_first,
     bit_iterator<ForwardIt2> s_last, BinaryPredicate p) {
-    (last, s_first, s_last, p); 
-    return first;
+    return std::find_end(first, last, s_first, s_last, p); 
 }
 
-// TODO
+// Status complete
 template <class ExecutionPolicy, class ForwardIt1, class ForwardIt2,
     class BinaryPredicate> bit_iterator<ForwardIt1> find_end(
     ExecutionPolicy&& policy, bit_iterator<ForwardIt1> first,
     bit_iterator<ForwardIt1> last, bit_iterator<ForwardIt2> s_first,
     bit_iterator<ForwardIt2> s_last, BinaryPredicate p) {
-    (policy, last, s_first, s_last, p); 
-    return first;
+
+    return std::find_end(std::forward<ExecutionPolicy>(policy), first,
+       last, s_first, s_last, p); 
 } 
 
 // ========================================================================== //

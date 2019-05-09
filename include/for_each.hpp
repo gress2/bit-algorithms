@@ -15,8 +15,8 @@
 // Project sources
 // Third-party libraries
 // Miscellaneous
-
 namespace bit {
+// ========================================================================== //
 
 template <class InputIt, class UnaryFunction>
 constexpr UnaryFunction for_each(bit_iterator<InputIt> first, 

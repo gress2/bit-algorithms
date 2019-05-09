@@ -9,22 +9,22 @@
 #ifndef _ADJACENT_FIND_HPP_INCLUDED
 #define _ADJACENT_FIND_HPP_INCLUDED
 // ========================================================================== //
-
+// C++ standard library
 // Project sources
 // Third-party libraries
 // Miscellaneous
-
 namespace bit {
+// ========================================================================== //
 
-// TODO
+// Status: to do
 template <class ForwardIt>
 constexpr bit_iterator<ForwardIt> adjacent_find(bit_iterator<ForwardIt> first,
-    bit_iterator<ForwardIt> last) {
+    bit_iterator<ForwardIt> last) { 
     (last);
     return first;    
 }
 
-// TODO
+// Status: to do
 template <class ExecutionPolicy, class ForwardIt>
 bit_iterator<ForwardIt> adjacent_find(ExecutionPolicy&& policy,
     bit_iterator<ForwardIt> first, bit_iterator<ForwardIt> last) {
@@ -32,21 +32,21 @@ bit_iterator<ForwardIt> adjacent_find(ExecutionPolicy&& policy,
     return first;
 }
 
-// TODO
+// Status: complete
+// Notes: can't optimize due to binary predicate
 template <class ForwardIt, class BinaryPredicate>
 constexpr bit_iterator<ForwardIt> adjacent_find(bit_iterator<ForwardIt> first,
     bit_iterator<ForwardIt> last, BinaryPredicate p) {
-    (last, p); 
-    return first;
+    return std::adjacent_find(first, last, p);
 }
 
-// TODO
+// Status: complete
+// Notes: con't optimize due to binary predicate
 template <class ExecutionPolicy, class ForwardIt, class BinaryPredicate>
-bit_iterator<ForwardIt> adjacent_find(ExecutionPolicy&&, 
+bit_iterator<ForwardIt> adjacent_find(ExecutionPolicy&& policy, 
     bit_iterator<ForwardIt> first, bit_iterator<ForwardIt> last,
     BinaryPredicate p) {
-    (last, p); 
-    return first;
+    return std::adjacent_find(std::forward<ExecutionPolicy>(policy), first, last, p);
 }
 
 // ========================================================================== //

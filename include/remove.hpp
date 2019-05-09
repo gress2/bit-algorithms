@@ -15,8 +15,40 @@
 // Project sources
 // Third-party libraries
 // Miscellaneous
-
 namespace bit {
+// ========================================================================== //
+
+// Status: to do
+template <class ForwardIt>
+constexpr bit_iterator<ForwardIt> remove(bit_iterator<ForwardIt> first,
+    bit_iterator<ForwardIt> last, const bit_value& value) {
+    (last, value);
+    return first;
+}
+
+// Status: to do 
+template <class ExecutionPolicy, class ForwardIt>
+bit_iterator<ForwardIt> remove(ExecutionPolicy&& policy, 
+    bit_iterator<ForwardIt> first, bit_iterator<ForwardIt> last, 
+    const bit_value& value) {
+    (policy, last, value);
+    return first;
+}
+
+// Status: complete
+template <class ForwardIt, class UnaryPredicate>
+constexpr bit_iterator<ForwardIt> remove_if(bit_iterator<ForwardIt> first,
+    bit_iterator<ForwardIt> last, UnaryPredicate p) {
+    return std::remove_if(first, last, p);
+}
+
+// Status: complete
+template <class ExecutionPolicy, class ForwardIt, class UnaryPredicate>
+bit_iterator<ForwardIt> remove_if(ExecutionPolicy&& policy, 
+    bit_iterator<ForwardIt> first, bit_iterator<ForwardIt> last, 
+    UnaryPredicate p) {
+    return std::remove_if(std::forward<ExecutionPolicy>(policy), first, last, p);
+}
 
 // ========================================================================== //
 } // namespace bit

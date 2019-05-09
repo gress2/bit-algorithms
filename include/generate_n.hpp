@@ -15,23 +15,22 @@
 // Project sources
 // Third-party libraries
 // Miscellaneous
-
 namespace bit {
+// ========================================================================== //
 
-// TODO
+// Status: complete
 template <class OutputIt, class Size, class Generator>
 constexpr bit_iterator<OutputIt> generate_n(bit_iterator<OutputIt> first,
     Size count, Generator g) {
-    (count, g); 
-    return first;
+    return std::generate_n(first, count, g);
 }
 
-// TODO
+// Status: complete
 template <class ExecutionPolicy, class ForwardIt, class Size, class Generator>
 bit_iterator<ForwardIt> generate_n(ExecutionPolicy&& policy,
     bit_iterator<ForwardIt> first, Size count, Generator g) {
-    (policy, count, g); 
-    return first;
+    return std::generate_n(std::forward<ExecutionPolicy>(policy), first, 
+        count, g);
 }
 
 // ========================================================================== //

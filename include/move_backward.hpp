@@ -15,8 +15,18 @@
 // Project sources
 // Third-party libraries
 // Miscellaneous
-
 namespace bit {
+// ========================================================================== //
+
+// Status: to do
+// Notes: can this be implemented using copy_backward?
+template <class BidirIt1, class BidirIt2>
+constexpr bit_iterator<BidirIt2> move_backward(bit_iterator<BidirIt1> first,
+    bit_iterator<BidirIt1> last, bit_iterator<BidirIt2> d_last) {
+    (first, last); 
+    return d_last;
+}
+
 
 // ========================================================================== //
 } // namespace bit

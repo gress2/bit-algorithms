@@ -16,10 +16,10 @@
 // Project sources
 // Third-party libraries
 // Miscellaneous
-
 namespace bit {
+// ========================================================================== //
 
-// TODO
+// Status: to do
 template <class OutputIt, class Size>
 constexpr bit_iterator<OutputIt> fill_n(bit_iterator<OutputIt> first, Size count, 
     const bit_value& bv) {
@@ -27,7 +27,7 @@ constexpr bit_iterator<OutputIt> fill_n(bit_iterator<OutputIt> first, Size count
   bit::fill(first, last, bv); 
 }
 
-// TODO
+// Status: to do
 template <class ExecutionPolicy, class ForwardIt, class Size>
 bit_iterator<ForwardIt> fill_n(ExecutionPolicy&& policy, 
     bit_iterator<ForwardIt> first, Size count, const bit_value& bv) {

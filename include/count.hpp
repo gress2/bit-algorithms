@@ -16,11 +16,10 @@
 // Project sources
 // Third-party libraries
 // Miscellaneous
-
 namespace bit {
-
 // ========================================================================== //
 
+// Status: ready for testing and benchmarking
 template<class InputIt>
 typename bit_iterator<InputIt>::difference_type
 count(
@@ -28,7 +27,6 @@ count(
     bit_iterator <InputIt> last,
     bit_value value
 ) {
-
     // Assertions
     _assert_range_viability(first, last);
 
@@ -72,6 +70,41 @@ count(
 
     // Finalization
     return result;
+}
+
+// Status: to do
+template <class ExecutionPolicy, class ForwardIt, class T>
+typename bit_iterator<ForwardIt>::difference_type count(
+    ExecutionPolicy&& policy,
+    bit_iterator<ForwardIt> first,
+    bit_iterator<ForwardIt> last,
+    bit::bit_value bv
+) {
+    (policy, first, last, bv);
+    return 0;
+}
+
+// Status: to do
+template <class InputIt, class UnaryPredicate>
+constexpr typename bit_iterator<InputIt>::difference_type count_if(
+    bit_iterator<InputIt> first,
+    bit_iterator<InputIt> last,
+    UnaryPredicate p
+) {
+    (first, last, p);
+    return 0;
+}
+
+// Status: to do
+template <class ExecutionPolicy, class ForwardIt, class UnaryPredicate>
+typename bit_iterator<ForwardIt>::difference_type count_if(
+    ExecutionPolicy&& policy,
+    bit_iterator<ForwardIt> first,
+    bit_iterator<ForwardIt> last,
+    UnaryPredicate p
+) {
+    (policy, first, last, p);
+    return 0;
 }
 
 } // namespace bit

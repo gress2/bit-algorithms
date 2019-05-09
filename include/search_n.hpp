@@ -15,8 +15,43 @@
 // Project sources
 // Third-party libraries
 // Miscellaneous
-
 namespace bit {
+// ========================================================================== //
+
+// Status: to do
+template <class ForwardIt, class Size, class T>
+constexpr bit_iterator<ForwardIt> search_n(bit_iterator<ForwardIt> first,
+    bit_iterator<ForwardIt> last, Size count, bit::bit_value bv) {
+    (last, count, bv);
+    return first;
+}
+
+// Status: to do
+template <class ExecutionPolicy, class ForwardIt, class Size, class T>
+bit_iterator<ForwardIt> search_n(ExecutionPolicy&& policy,
+    bit_iterator<ForwardIt> first, bit_iterator<ForwardIt> last, Size count,
+    bit::bit_value bv) {
+    (policy, last, count, bv);
+    return first;
+}
+
+// Status: complete
+template <class ForwardIt, class Size, class T, class BinaryPredicate>
+constexpr bit_iterator<ForwardIt> search_n(bit_iterator<ForwardIt> first,
+    bit_iterator<ForwardIt> last, Size count, bit::bit_value bv, 
+    BinaryPredicate p) {
+    return std::search_n(first, last, count, bv, p);
+}
+
+// Status: complete
+template <class ExecutionPolicy, class ForwardIt, class Size, class T,
+         class BinaryPredicate> bit_iterator<ForwardIt> search_n(
+    ExecutionPolicy&& policy, bit_iterator<ForwardIt> first, 
+    bit_iterator<ForwardIt> last, Size count, bit::bit_value bv, 
+    BinaryPredicate p) {
+    return std::search_n(std::forward<ExecutionPolicy>(policy), first, last,
+        count, bv, p);
+}
 
 // ========================================================================== //
 } // namespace bit

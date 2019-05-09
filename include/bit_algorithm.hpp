@@ -15,6 +15,7 @@
 
 // ================================ PREAMBLE ================================ //
 #include "input_iterator.hpp"
+#include "input_container.hpp"
 #include "debug_utils.hpp" //TODO does this belong somewhere else?
 #include "bit_algorithm_details.hpp"
 // <algorithm> overloads
