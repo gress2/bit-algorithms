@@ -18,6 +18,7 @@
 #include "input_iterator.hpp"
 #include "debug_utils.hpp" //TODO does this belong somewhere else?
 #include "bit_algorithm_details.hpp"
+#include "range_reader.hpp"
 // <algorithm> overloads
 #include "all_of.hpp"
 #include "any_of.hpp"

@@ -87,7 +87,16 @@ TEMPLATE_PRODUCT_TEST_CASE("replace: handles multi word cases",
     REQUIRE(*std::next(word_iter, 2) == all_ones);
 
     cont = {all_ones, all_ones, all_ones};
+    word_iter = cont.begin();
+    first = bit_iterator(cont.begin());
+    second = bit_iterator(std::next(cont.begin()));
+    third = bit_iterator(std::next(cont.begin(), 2));
+    last = bit_iterator(cont.end());
+
     bit::replace(first, last, bit::bit1, bit::bit0);
+
+    word_iter = cont.begin();
+
     REQUIRE(*word_iter == 0);
     REQUIRE(*std::next(word_iter) == 0);
     REQUIRE(*std::next(word_iter, 2) == 0);
@@ -101,6 +110,15 @@ TEMPLATE_PRODUCT_TEST_CASE("replace: handles multi word cases",
     REQUIRE(*std::next(word_iter) == static_cast<word_type>(all_ones >> (num_digits / 2)));
 
     cont = {0, 0, 0};
+
+    word_iter = cont.begin();
+    first = bit_iterator(cont.begin());
+    second = bit_iterator(std::next(cont.begin()));
+    third = bit_iterator(std::next(cont.begin(), 2));
+    last = bit_iterator(cont.end());
+    half_first = std::next(first, num_digits / 2);
+    half_second = std::next(second, num_digits / 2);
+
     bit::replace(half_second, third, bit::bit0, bit::bit1);
     REQUIRE(*word_iter == 0);
     REQUIRE(*std::next(word_iter) == static_cast<word_type>(all_ones << (num_digits / 2)));

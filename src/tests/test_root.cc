@@ -42,5 +42,6 @@
 #include "min_element.hpp"
 #include "padded_read.hpp"
 #include "replace.hpp"
+#include "range_reader.hpp"
 // Third party libraries
 // ========================================================================== //

@@ -32,6 +32,12 @@ std::string word_to_vec(T1 word) {
     std::reverse(out.begin(), out.end());
     return out;
 }
+
+template <class T>
+void print_as_binary(T num) {
+  constexpr std::size_t num_digits = binary_digits<T>::value;
+  std::cout << "[MSB] " << (std::bitset<num_digits>(num)) << " [LSB]\n"; 
+}
 // -------------------------------------------------------------------------- //
 
 
