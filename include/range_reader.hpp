@@ -21,8 +21,14 @@
 namespace bit {
 // ========================================================================== //
 
+template <std::size_t N> 
+struct index_t : std::integral_constant<std::size_t, N>
+{};  
+
+template <std::size_t N>
+inline constexpr index_t<N> index = index_t<N>{};
+
 /* still TODO (6/24):
-    -> fix the need for the .template calls
     -> add more tests. particularly for cases where word types are different
     -> improve readability and/or documentation. clearly define how this should be used
        and, more importantly, where this should not be used. i.e. the user needs
@@ -268,21 +274,21 @@ public:
         return read;
     }
 
-    template <int N>
+    template <std::size_t N>
     using iter_selector_t = typename std::conditional<N == 0, Iter1, Iter2>::type;
 
-    template <int N>
-    bit_iterator<iter_selector_t<N>> get_bit_iterator() const {
+    template <std::size_t N>
+    bit_iterator<iter_selector_t<N>> get_bit_iterator(index_t<N>) const {
         return N == 0 ? first1_ : first2_;
     }
 
-    template <int N>
-    iter_selector_t<N> get_base_iterator() const {
+    template <std::size_t N>
+    iter_selector_t<N> get_base_iterator(index_t<N>) const {
         return N == 0 ? first1_.base() : first2_.base();
     }
 
-    template <int N>
-    std::size_t get_position() const {
+    template <std::size_t N>
+    std::size_t get_position(index_t<N>) const {
         return N == 0 ? first1_.position() : first2_.position();
     }
 };

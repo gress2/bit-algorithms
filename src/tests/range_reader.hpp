@@ -23,10 +23,126 @@
 // Miscellaneous
 // ========================================================================== //
 
+template <class T>
+std::string to_bit_string(T t) {
+    return std::bitset<bit::binary_digits<T>::value>(t).to_string();
+}
+
+template <class T>
+void display(T drr) {
+    using namespace bit;
+
+    using pair_type = typename T::read_pair_t;
+    using word_type = typename pair_type::first_type;
+    constexpr std::size_t num_digits = bit::binary_digits<word_type>::value;
+    
+    std::vector<std::string> first_word_bit_strings;
+    std::vector<std::string> second_word_bit_strings;
+    std::vector<std::size_t> first_positions;
+    std::vector<std::size_t> second_positions;
+
+    first_word_bit_strings.push_back(
+        to_bit_string(*(drr.get_base_iterator(index<0>))));
+    second_word_bit_strings.push_back(
+        to_bit_string(*(drr.get_base_iterator(index<1>))));
+    first_positions.push_back(drr.get_position(index<0>));
+    second_positions.push_back(drr.get_position(index<1>));
+
+    // move positions and words
+    pair_type read = drr.read_first();
+
+    first_word_bit_strings.push_back(
+        to_bit_string(*(drr.get_base_iterator(index<0>))));
+    second_word_bit_strings.push_back(
+        to_bit_string(*(drr.get_base_iterator(index<1>))));
+    first_positions.push_back(drr.get_position(index<0>));
+    second_positions.push_back(drr.get_position(index<1>));
+
+    while (!drr.is_next_read_last()) {
+        read = drr.read();
+        // move positions and words
+        first_word_bit_strings.push_back(
+            to_bit_string(*(drr.get_base_iterator(index<0>))));
+        second_word_bit_strings.push_back(
+            to_bit_string(*(drr.get_base_iterator(index<1>))));
+        first_positions.push_back(drr.get_position(index<0>));
+        second_positions.push_back(drr.get_position(index<1>));
+    }
+
+    read = drr.read_last();
+    first_word_bit_strings.push_back(
+        to_bit_string(*(drr.get_base_iterator(index<0>))));
+    second_word_bit_strings.push_back(
+        to_bit_string(*(drr.get_base_iterator(index<1>))));
+    first_positions.push_back(drr.get_position(index<0>));
+    second_positions.push_back(drr.get_position(index<1>));
+
+    first_positions.push_back(drr.get_num_relevant_bits() + first_positions.back());
+    second_positions.push_back(drr.get_num_relevant_bits() + second_positions.back());
+
+    for (std::size_t i = 0; i < first_positions.size(); i++) {
+        std::string to_be_inserted = "|";
+        std::size_t string_idx = i;
+        std::size_t position_to_insert = first_positions[i];
+
+        if (i == 0) {
+            to_be_inserted = "]";
+        } else if (i == first_positions.size() - 1) {
+            string_idx--;
+            position_to_insert++;
+            to_be_inserted = "[";
+        }
+
+        first_word_bit_strings[string_idx].insert(position_to_insert, to_be_inserted); 
+
+        if (i != first_positions.size() - 2) {
+            std::reverse(first_word_bit_strings[string_idx].begin(), 
+                first_word_bit_strings[string_idx].end());
+        }
+
+    }
+
+    for (std::size_t i = 0; i < second_positions.size(); i++) {
+        std::string to_be_inserted = "|";
+        std::size_t string_idx = i;
+        std::size_t position_to_insert = second_positions[i];
+
+        if (i == 0) {
+            to_be_inserted = "]";
+        } else if (i == second_positions.size() - 1) {
+            string_idx--;
+            position_to_insert++;
+            to_be_inserted = "[";
+        }
+
+        second_word_bit_strings[string_idx].insert(position_to_insert, to_be_inserted); 
+
+        if (i != second_positions.size() - 2) {
+            std::reverse(second_word_bit_strings[string_idx].begin(), 
+                second_word_bit_strings[string_idx].end());
+        }
+    }
+
+    std::reverse(first_word_bit_strings.begin(), first_word_bit_strings.end());
+    std::reverse(second_word_bit_strings.begin(),second_word_bit_strings.end());
+
+    std::cout << "end";
+    for (auto& e : first_word_bit_strings) {
+        std::cout << " " << e;  
+    }
+    std::cout << " start\n";
+
+    std::cout << "end";
+    for (auto& e : second_word_bit_strings) {
+        std::cout << " " << e;  
+    }
+    std::cout << " start\n\n";
+}
+
 
 // ------------------------ Range Reader Tests ------------------------- //
 
-TEMPLATE_TEST_CASE("dual range reader: read_first() is fine", 
+TEMPLATE_TEST_CASE("dual range reader: read_first() is ok for single(full) word case", 
     "[dual_range_reader]", unsigned short, unsigned int, unsigned long, 
     unsigned long long) {
 
@@ -42,84 +158,116 @@ TEMPLATE_TEST_CASE("dual range reader: read_first() is fine",
 
     dual_range_reader reader1(beg_x, end_x, beg_y, end_y);
 
-    REQUIRE(!reader1.is_next_read_last());
-
     auto pair = reader1.read_first();
     REQUIRE(pair.first == 3929);
     REQUIRE(pair.second == 2183);
-
-    std::vector<TestType> vec1 = {3, 8, 22};
-    std::vector<TestType> vec2 = {8, 11111, 88};
-
-    using vec_iter_t = typename std::vector<TestType>::iterator;
-
-    bit_iterator<vec_iter_t> vec1_beg(vec1.begin());
-    bit_iterator<vec_iter_t> vec1_end(vec1.end());
-    bit_iterator<vec_iter_t> vec2_beg(vec2.begin());
-    bit_iterator<vec_iter_t> vec2_end(vec2.end());
-
-    dual_range_reader reader2(vec1_beg, vec1_end, vec2_beg, vec2_end);
-
-    auto pair2 = reader2.read_first(); 
-
-    REQUIRE(pair2.first == 3);
-    REQUIRE(pair2.second == 8);
-
-    REQUIRE(!reader2.is_next_read_last());
-
-    TestType ary1[3] = {1, 2, 3};
-    TestType ary2[3] = {9, 10, 11}; 
-    bit_iterator<TestType*> ary1_beg(ary1);
-    bit_iterator<TestType*> ary1_end(ary1 + 3);
-    bit_iterator<TestType*> ary2_beg(ary2);
-    bit_iterator<TestType*> ary2_end(ary2 + 3);
-
-    dual_range_reader reader3(ary1_beg, ary1_end, ary2_beg, ary2_end);
-    auto pair3 = reader3.read_first();
-    REQUIRE(pair3.first == 1);
-    REQUIRE(pair3.second == 9);
-
-    std::vector<TestType> vec3 = {static_cast<TestType>(_all_ones()), 0, 1024};
-
-    constexpr std::size_t num_digits = binary_digits<TestType>::value;
-    bit_iterator<vec_iter_t> vec3a_beg(vec3.begin(), num_digits / 2);
-    bit_iterator<vec_iter_t> vec3a_end(vec3.begin() + 1, 0);
-    bit_iterator<vec_iter_t> vec3b_beg(vec3.begin(), num_digits / 2 + 1); 
-    bit_iterator<vec_iter_t> vec3b_end(vec3.begin() + 1, 0);
-
-    dual_range_reader reader4(vec3a_beg, vec3a_end, vec3b_beg, vec3b_end);
-    auto pair4 = reader4.read_first();
-    REQUIRE(pair4.first == 
-        _shift_towards_lsb(static_cast<TestType>(_all_ones()), num_digits / 2));
-    REQUIRE(pair4.second == 
-        _shift_towards_lsb(static_cast<TestType>(_all_ones()), num_digits / 2 + 1));
-
-    REQUIRE(reader4.template get_position<0>() == 0);
-    REQUIRE(reader4.template get_position<1>() == 1); 
-
-    reader4 = dual_range_reader(vec3b_beg, vec3b_end, vec3a_beg, vec3a_end);
-    auto pair5 = reader4.read_first();
-    REQUIRE(pair5.first == 
-        _shift_towards_lsb(static_cast<TestType>(_all_ones()), num_digits / 2 + 1));
-    REQUIRE(pair5.second == 
-        _shift_towards_lsb(static_cast<TestType>(_all_ones()), num_digits / 2));
-
-    REQUIRE(reader4.template get_position<0>() == 1);
-    REQUIRE(reader4.template get_position<1>() == 0); 
-
-    TestType t = 0;
-    bit_iterator<TestType*> t1_beg(&t, 4);
-    bit_iterator<TestType*> t1_end(&t, 5);
-    bit_iterator<TestType*> t2_beg(&t, 6); 
-    bit_iterator<TestType*> t2_end(&t, 7);
-
-    dual_range_reader reader5(t1_beg, t1_end, t2_beg, t2_end);
-
-    auto pair7 = reader5.read_first();
-    REQUIRE(pair7.first == 0);
-    REQUIRE(pair7.second == 0);
 }
 
+TEMPLATE_PRODUCT_TEST_CASE("dual range reader: read_first() is ok for std containers", 
+    "[template][product]", (std::vector, std::list, std::forward_list),
+    (unsigned short, unsigned int, unsigned long)) {
+
+    using namespace bit;
+    
+    using container_type = TestType;
+    using value_type = typename container_type::value_type;
+    using cont_iter_type = typename container_type::iterator;
+    using bit_iter_type = bit_iterator<cont_iter_type>;
+
+    container_type c1 = {3, 8, 22};
+    container_type c2 = {8, 11111, 88};
+
+    bit_iter_type c1_beg(c1.begin());
+    bit_iter_type c1_end(c1.end()); 
+    bit_iter_type c2_beg(c2.begin());
+    bit_iter_type c2_end(c2.end());
+
+    dual_range_reader reader(c1_beg, c1_end, c2_beg, c2_end);
+
+    std::pair<value_type, value_type> read = reader.read_first();
+
+    REQUIRE(read.first == 3);
+    REQUIRE(read.second == 8);
+
+    REQUIRE(!reader.is_next_read_last());
+
+    container_type c3 = {static_cast<value_type>(_all_ones()), 0, 1024};
+    constexpr std::size_t num_digits = binary_digits<value_type>::value;
+
+    bit_iter_type c3a_beg(c3.begin(), num_digits / 2);
+    bit_iter_type c3a_end(std::next(c3.begin()), 0);
+    bit_iter_type c3b_beg(c3.begin(), num_digits / 2 + 1);
+    bit_iter_type c3b_end(std::next(c3.begin()), 1);
+
+    dual_range_reader reader2(c3a_beg, c3a_end, c3b_beg, c3b_end);
+
+    auto read2 = reader2.read_first();
+    REQUIRE(read2.first == 
+        _shift_towards_lsb(static_cast<value_type>(_all_ones()), num_digits / 2));
+    REQUIRE(read2.second ==
+        _shift_towards_lsb(static_cast<value_type>(_all_ones()), num_digits / 2 + 1));
+
+    REQUIRE(reader2.get_position(index<0>) == 0);
+    REQUIRE(reader2.get_position(index<1>) == 1); 
+}
+
+TEMPLATE_TEST_CASE("dual range reader: read_first() is ok for c-style arrays",
+    "[dual_range_reader]", unsigned short, unsigned int, unsigned long) {
+
+    TestType ary1[3] = {1, 2, 3};
+    TestType ary2[3] = {9, 10, 11};
+
+    using bit_iter_t = typename bit::bit_iterator<TestType*>;
+    
+    bit_iter_t ary1_beg(ary1);
+    bit_iter_t ary1_end(ary1 + 3);
+    bit_iter_t ary2_beg(ary2);
+    bit_iter_t ary2_end(ary2 + 3);
+
+    bit::dual_range_reader reader(ary1_beg, ary1_end, ary2_beg, ary2_end);
+    auto read = reader.read_first();
+    REQUIRE(read.first == 1);
+    REQUIRE(read.second == 9);
+}
+
+TEMPLATE_PRODUCT_TEST_CASE("dual range reader: read() is ok for std containers", 
+    "[template][product]", (std::vector, std::list, std::forward_list),
+    (unsigned short, unsigned int, unsigned long)) {
+
+    using namespace bit;
+    
+    using container_type = TestType;
+    using value_type = typename container_type::value_type;
+    using cont_iter_type = typename container_type::iterator;
+    using bit_iter_type = bit_iterator<cont_iter_type>;
+    constexpr std::size_t num_digits = binary_digits<value_type>::value;
+
+    container_type c1 = { 
+        _shift_towards_msb(static_cast<value_type>(_all_ones()), num_digits - 5),
+        _shift_towards_msb(static_cast<value_type>(_all_ones()), 7),
+        _shift_towards_msb(static_cast<value_type>(_all_ones()), num_digits / 2)
+    };
+
+    dual_range_reader reader(
+        bit_iter_type(c1.begin(), num_digits - 3),
+        bit_iter_type(std::next(c1.begin(), 2), 10),
+        bit_iter_type(c1.begin(), num_digits - 2),
+        bit_iter_type(std::next(c1.begin(), 2), 11)
+    ); 
+
+    //        [2]              [1]               [0] 
+    // 11111111100000000 1111111110000000 1111100000000000
+    //       [         |                |   ]                                                   
+    //      [         |                |   ]
+
+    display(reader);
+
+    reader.read_first();
+
+    auto read = reader.read();
+}
+
+    
 TEMPLATE_TEST_CASE("dual range reader: read() is fine", "[dual_range_reader]",
     unsigned short, unsigned int, unsigned long, unsigned long long) {
 
