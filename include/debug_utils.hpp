@@ -78,6 +78,7 @@ void display(T drr) {
         second_positions.push_back(drr.get_position(index<1>));
 
         drr.read();
+
     } while (!drr.is_next_read_last()); 
 
     first_word_bit_strings.push_back(

@@ -86,8 +86,6 @@ TEMPLATE_PRODUCT_TEST_CASE("dual range reader: read_first() is ok for std contai
 
     dual_range_reader reader2(c3a_beg, c3a_end, c3b_beg, c3b_end);
 
-    display(reader2);
-
     auto read2 = reader2.read_first();
     REQUIRE(read2.first == 
         _shift_towards_lsb(static_cast<value_type>(_all_ones()), num_digits / 2));
@@ -113,8 +111,6 @@ TEMPLATE_TEST_CASE("dual range reader: read_first() is ok for c-style arrays",
 
     bit::dual_range_reader reader(ary1_beg, ary1_end, ary2_beg, ary2_end);
 
-    display(reader);
-
     auto read = reader.read_first();
     REQUIRE(read.first == 1);
     REQUIRE(read.second == 9);
@@ -132,10 +128,12 @@ TEMPLATE_PRODUCT_TEST_CASE("dual range reader: read() is ok for std containers",
     using bit_iter_type = bit_iterator<cont_iter_type>;
     constexpr std::size_t num_digits = binary_digits<value_type>::value;
 
+    constexpr value_type all_ones = static_cast<value_type>(_all_ones());
+
     container_type c1 = { 
-        _shift_towards_msb(static_cast<value_type>(_all_ones()), num_digits - 5),
-        _shift_towards_msb(static_cast<value_type>(_all_ones()), 7),
-        _shift_towards_msb(static_cast<value_type>(_all_ones()), num_digits / 2)
+        _shift_towards_msb(all_ones, num_digits - 5),
+        _shift_towards_msb(all_ones, 7),
+        _shift_towards_msb(all_ones, num_digits / 2)
     };
 
     dual_range_reader reader(
@@ -145,12 +143,31 @@ TEMPLATE_PRODUCT_TEST_CASE("dual range reader: read() is ok for std containers",
         bit_iter_type(std::next(c1.begin(), 2), 11)
     ); 
 
-    display(reader);
-
     reader.read_first();
 
-
     auto read = reader.read();
+
+    value_type r1_expected = _shift_towards_msb(all_ones, 7);
+    value_type r2_expected = _shift_towards_lsb(r1_expected, 1);
+
+    REQUIRE(read.first == r1_expected);
+    REQUIRE(read.second == r2_expected);
+
+    REQUIRE(reader.is_next_read_last());
+
+    c1 = { 
+      _shift_towards_lsb(all_ones, num_digits / 2),
+      _shift_towards_lsb(all_ones, num_digits / 4),
+      _shift_towards_lsb(all_ones, num_digits / 8), 
+      all_ones
+    };
+      
+    reader = dual_range_reader(
+        bit_iter_type(c1.begin(), num_digits - 3),
+        bit_iter_type(std::next(c1.begin(), 3), 10),
+        bit_iter_type(c1.begin(), num_digits - 2),
+        bit_iter_type(std::next(c1.begin(), 3), 11)
+    );
 }
 
     
@@ -169,8 +186,6 @@ TEMPLATE_TEST_CASE("dual range reader: read() is fine", "[dual_range_reader]",
     bit_iterator<TestType*> end2(ary + 2, 4);
 
     dual_range_reader reader(beg1, end1, beg2, end2);
-
-    display(reader);
 
     std::pair<TestType, TestType> p = reader.read_first();
     std::size_t relevant_bits = reader.get_num_relevant_bits();
