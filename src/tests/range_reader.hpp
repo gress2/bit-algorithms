@@ -32,6 +32,8 @@ template <class T>
 void display(T drr) {
     using namespace bit;
 
+    std::cout << "This is how the two ranges will be read by the dual_range_reader." << std::endl;
+
     using pair_type = typename T::read_pair_t;
     using word_type = typename pair_type::first_type;
     constexpr std::size_t num_digits = bit::binary_digits<word_type>::value;
@@ -41,6 +43,7 @@ void display(T drr) {
     std::vector<std::size_t> first_positions;
     std::vector<std::size_t> second_positions;
 
+    // before any reads are done
     first_word_bit_strings.push_back(
         to_bit_string(*(drr.get_base_iterator(index<0>))));
     second_word_bit_strings.push_back(
@@ -48,9 +51,9 @@ void display(T drr) {
     first_positions.push_back(drr.get_position(index<0>));
     second_positions.push_back(drr.get_position(index<1>));
 
-    // move positions and words
+    
     pair_type read = drr.read_first();
-
+    // after read_first is called
     first_word_bit_strings.push_back(
         to_bit_string(*(drr.get_base_iterator(index<0>))));
     second_word_bit_strings.push_back(
@@ -60,7 +63,7 @@ void display(T drr) {
 
     while (!drr.is_next_read_last()) {
         read = drr.read();
-        // move positions and words
+        // after a subsequent read
         first_word_bit_strings.push_back(
             to_bit_string(*(drr.get_base_iterator(index<0>))));
         second_word_bit_strings.push_back(
@@ -70,6 +73,7 @@ void display(T drr) {
     }
 
     read = drr.read_last();
+
     first_word_bit_strings.push_back(
         to_bit_string(*(drr.get_base_iterator(index<0>))));
     second_word_bit_strings.push_back(
@@ -81,46 +85,34 @@ void display(T drr) {
     second_positions.push_back(drr.get_num_relevant_bits() + second_positions.back());
 
     for (std::size_t i = 0; i < first_positions.size(); i++) {
-        std::string to_be_inserted = "|";
+        std::string to_be_inserted = "][";
         std::size_t string_idx = i;
-        std::size_t position_to_insert = first_positions[i];
+        std::size_t position_to_insert = num_digits - first_positions[i];
 
         if (i == 0) {
             to_be_inserted = "]";
         } else if (i == first_positions.size() - 1) {
             string_idx--;
-            position_to_insert++;
             to_be_inserted = "[";
         }
 
         first_word_bit_strings[string_idx].insert(position_to_insert, to_be_inserted); 
 
-        if (i != first_positions.size() - 2) {
-            std::reverse(first_word_bit_strings[string_idx].begin(), 
-                first_word_bit_strings[string_idx].end());
-        }
-
     }
 
     for (std::size_t i = 0; i < second_positions.size(); i++) {
-        std::string to_be_inserted = "|";
+        std::string to_be_inserted = "][";
         std::size_t string_idx = i;
-        std::size_t position_to_insert = second_positions[i];
+        std::size_t position_to_insert = num_digits - second_positions[i];
 
         if (i == 0) {
             to_be_inserted = "]";
         } else if (i == second_positions.size() - 1) {
             string_idx--;
-            position_to_insert++;
             to_be_inserted = "[";
         }
 
         second_word_bit_strings[string_idx].insert(position_to_insert, to_be_inserted); 
-
-        if (i != second_positions.size() - 2) {
-            std::reverse(second_word_bit_strings[string_idx].begin(), 
-                second_word_bit_strings[string_idx].end());
-        }
     }
 
     std::reverse(first_word_bit_strings.begin(), first_word_bit_strings.end());
@@ -201,6 +193,8 @@ TEMPLATE_PRODUCT_TEST_CASE("dual range reader: read_first() is ok for std contai
 
     dual_range_reader reader2(c3a_beg, c3a_end, c3b_beg, c3b_end);
 
+    display(reader2);
+
     auto read2 = reader2.read_first();
     REQUIRE(read2.first == 
         _shift_towards_lsb(static_cast<value_type>(_all_ones()), num_digits / 2));
@@ -259,8 +253,6 @@ TEMPLATE_PRODUCT_TEST_CASE("dual range reader: read() is ok for std containers",
     // 11111111100000000 1111111110000000 1111100000000000
     //       [         |                |   ]                                                   
     //      [         |                |   ]
-
-    display(reader);
 
     reader.read_first();
 
