@@ -23,113 +23,6 @@
 // Miscellaneous
 // ========================================================================== //
 
-template <class T>
-std::string to_bit_string(T t) {
-    return std::bitset<bit::binary_digits<T>::value>(t).to_string();
-}
-
-template <class T>
-void display(T drr) {
-    using namespace bit;
-
-    std::cout << "This is how the two ranges will be read by the dual_range_reader." << std::endl;
-
-    using pair_type = typename T::read_pair_t;
-    using word_type = typename pair_type::first_type;
-    constexpr std::size_t num_digits = bit::binary_digits<word_type>::value;
-    
-    std::vector<std::string> first_word_bit_strings;
-    std::vector<std::string> second_word_bit_strings;
-    std::vector<std::size_t> first_positions;
-    std::vector<std::size_t> second_positions;
-
-    // before any reads are done
-    first_word_bit_strings.push_back(
-        to_bit_string(*(drr.get_base_iterator(index<0>))));
-    second_word_bit_strings.push_back(
-        to_bit_string(*(drr.get_base_iterator(index<1>))));
-    first_positions.push_back(drr.get_position(index<0>));
-    second_positions.push_back(drr.get_position(index<1>));
-
-    
-    pair_type read = drr.read_first();
-    // after read_first is called
-    first_word_bit_strings.push_back(
-        to_bit_string(*(drr.get_base_iterator(index<0>))));
-    second_word_bit_strings.push_back(
-        to_bit_string(*(drr.get_base_iterator(index<1>))));
-    first_positions.push_back(drr.get_position(index<0>));
-    second_positions.push_back(drr.get_position(index<1>));
-
-    while (!drr.is_next_read_last()) {
-        read = drr.read();
-        // after a subsequent read
-        first_word_bit_strings.push_back(
-            to_bit_string(*(drr.get_base_iterator(index<0>))));
-        second_word_bit_strings.push_back(
-            to_bit_string(*(drr.get_base_iterator(index<1>))));
-        first_positions.push_back(drr.get_position(index<0>));
-        second_positions.push_back(drr.get_position(index<1>));
-    }
-
-    read = drr.read_last();
-
-    first_word_bit_strings.push_back(
-        to_bit_string(*(drr.get_base_iterator(index<0>))));
-    second_word_bit_strings.push_back(
-        to_bit_string(*(drr.get_base_iterator(index<1>))));
-    first_positions.push_back(drr.get_position(index<0>));
-    second_positions.push_back(drr.get_position(index<1>));
-
-    first_positions.push_back(drr.get_num_relevant_bits() + first_positions.back());
-    second_positions.push_back(drr.get_num_relevant_bits() + second_positions.back());
-
-    for (std::size_t i = 0; i < first_positions.size(); i++) {
-        std::string to_be_inserted = "][";
-        std::size_t string_idx = i;
-        std::size_t position_to_insert = num_digits - first_positions[i];
-
-        if (i == 0) {
-            to_be_inserted = "]";
-        } else if (i == first_positions.size() - 1) {
-            string_idx--;
-            to_be_inserted = "[";
-        }
-
-        first_word_bit_strings[string_idx].insert(position_to_insert, to_be_inserted); 
-
-    }
-
-    for (std::size_t i = 0; i < second_positions.size(); i++) {
-        std::string to_be_inserted = "][";
-        std::size_t string_idx = i;
-        std::size_t position_to_insert = num_digits - second_positions[i];
-
-        if (i == 0) {
-            to_be_inserted = "]";
-        } else if (i == second_positions.size() - 1) {
-            string_idx--;
-            to_be_inserted = "[";
-        }
-
-        second_word_bit_strings[string_idx].insert(position_to_insert, to_be_inserted); 
-    }
-
-    std::reverse(first_word_bit_strings.begin(), first_word_bit_strings.end());
-    std::reverse(second_word_bit_strings.begin(),second_word_bit_strings.end());
-
-    std::cout << "end";
-    for (auto& e : first_word_bit_strings) {
-        std::cout << " " << e;  
-    }
-    std::cout << " start\n";
-
-    std::cout << "end";
-    for (auto& e : second_word_bit_strings) {
-        std::cout << " " << e;  
-    }
-    std::cout << " start\n\n";
-}
 
 
 // ------------------------ Range Reader Tests ------------------------- //
@@ -183,13 +76,13 @@ TEMPLATE_PRODUCT_TEST_CASE("dual range reader: read_first() is ok for std contai
 
     REQUIRE(!reader.is_next_read_last());
 
-    container_type c3 = {static_cast<value_type>(_all_ones()), 0, 1024};
+    container_type c3 = {static_cast<value_type>(_all_ones()), 0, 1024, 0};
     constexpr std::size_t num_digits = binary_digits<value_type>::value;
 
     bit_iter_type c3a_beg(c3.begin(), num_digits / 2);
-    bit_iter_type c3a_end(std::next(c3.begin()), 0);
+    bit_iter_type c3a_end(std::next(c3.begin(), 2), 0);
     bit_iter_type c3b_beg(c3.begin(), num_digits / 2 + 1);
-    bit_iter_type c3b_end(std::next(c3.begin()), 1);
+    bit_iter_type c3b_end(std::next(c3.begin(), 2), 1);
 
     dual_range_reader reader2(c3a_beg, c3a_end, c3b_beg, c3b_end);
 
@@ -219,6 +112,9 @@ TEMPLATE_TEST_CASE("dual range reader: read_first() is ok for c-style arrays",
     bit_iter_t ary2_end(ary2 + 3);
 
     bit::dual_range_reader reader(ary1_beg, ary1_end, ary2_beg, ary2_end);
+
+    display(reader);
+
     auto read = reader.read_first();
     REQUIRE(read.first == 1);
     REQUIRE(read.second == 9);
@@ -249,12 +145,10 @@ TEMPLATE_PRODUCT_TEST_CASE("dual range reader: read() is ok for std containers",
         bit_iter_type(std::next(c1.begin(), 2), 11)
     ); 
 
-    //        [2]              [1]               [0] 
-    // 11111111100000000 1111111110000000 1111100000000000
-    //       [         |                |   ]                                                   
-    //      [         |                |   ]
+    display(reader);
 
     reader.read_first();
+
 
     auto read = reader.read();
 }
@@ -275,6 +169,8 @@ TEMPLATE_TEST_CASE("dual range reader: read() is fine", "[dual_range_reader]",
     bit_iterator<TestType*> end2(ary + 2, 4);
 
     dual_range_reader reader(beg1, end1, beg2, end2);
+
+    display(reader);
 
     std::pair<TestType, TestType> p = reader.read_first();
     std::size_t relevant_bits = reader.get_num_relevant_bits();

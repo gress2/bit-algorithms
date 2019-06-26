@@ -15,6 +15,7 @@
 // ============================== PREAMBLE ================================== //
 // C++ standard library
 // Project sources
+#include "bit_algorithm_details.hpp"
 // Third-party libraries
 // Miscellaneous
 
@@ -23,7 +24,7 @@ namespace bit {
 
 template <std::size_t N> 
 struct index_t : std::integral_constant<std::size_t, N>
-{};  
+{}; 
 
 template <std::size_t N>
 inline constexpr index_t<N> index = index_t<N>{};
