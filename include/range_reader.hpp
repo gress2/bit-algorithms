@@ -82,13 +82,15 @@ private:
     void check_if_next_read_is_last() {
         if (alignment_ == alignment_type_::both 
             || alignment_ == alignment_type_::first) {
+
             is_next_read_last_ =
-                std::next(first1_.base()) == last1_.base() && last1_.position() == 0
+                (std::next(first1_.base()) == last1_.base() && last1_.position() == 0)
                 || first1_.base() == last1_.base(); 
+
         } else {
-            std::cout << "B\n";
+
             is_next_read_last_ =
-                std::next(first2_.base()) == last2_.base() && last2_.position() == 0
+                (std::next(first2_.base()) == last2_.base() && last2_.position() == 0) 
                 || first2_.base() == last2_.base();
         } 
     }

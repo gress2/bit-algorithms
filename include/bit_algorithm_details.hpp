@@ -133,6 +133,8 @@ ForwardIt word_shift_right(ForwardIt first,
     return it;
 }
 
+
+
 // returns a word consisting of all one bits 
 constexpr auto _all_ones() {
     return -1;
@@ -173,6 +175,11 @@ template <class WordType>
 WordType _shift_towards_msb(WordType word, std::size_t n) {
     return word << n;
 }
+
+template <class WordType>
+WordType _set_nth_bit(WordType word, std::size_t n) {
+    return _shift_towards_msb<WordType>(1, n) | word; 
+} 
 
 /* Used to read partial/full words and pad any missing digits. Will not
  * read outside of the word pointed to by the first iterator (see case 4) 

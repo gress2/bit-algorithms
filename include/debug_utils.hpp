@@ -69,17 +69,15 @@ void display(T drr) {
 
     drr.read_first();
     
-    do {
+    while (!drr.is_next_read_last()) {
         first_word_bit_strings.push_back(
             to_bit_string(*(drr.get_base_iterator(index<0>))));
         second_word_bit_strings.push_back(
             to_bit_string(*(drr.get_base_iterator(index<1>))));
         first_positions.push_back(drr.get_position(index<0>));
         second_positions.push_back(drr.get_position(index<1>));
-
         drr.read();
-
-    } while (!drr.is_next_read_last()); 
+    } 
 
     first_word_bit_strings.push_back(
         to_bit_string(*(drr.get_base_iterator(index<0>))));
