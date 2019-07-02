@@ -15,6 +15,7 @@
 // ================================ PREAMBLE ================================ //
 // C++ standard library
 #include <bitset>
+#include <vector>
 // Project sources
 #include "bit.hpp"
 #include "range_reader.hpp"

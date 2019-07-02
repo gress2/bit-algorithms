@@ -78,8 +78,11 @@ TEMPLATE_PRODUCT_TEST_CASE("min_element: handles multi word cases",
     REQUIRE(it.base() == beg.base());
 
     cont = {all_ones, all_ones, bit::_shift_towards_lsb(all_ones, 1)};
+    beg = bit_iter_type(cont.begin());
+    end = bit_iter_type(cont.end());
     it = bit::min_element(beg, end);
     REQUIRE(it.position() == num_digits - 1);
+
     REQUIRE(it.base() == std::next(beg.base(), 2));
 
     bit_iter_type mid_last(std::next(cont.begin(), 2), num_digits / 2);
@@ -87,16 +90,22 @@ TEMPLATE_PRODUCT_TEST_CASE("min_element: handles multi word cases",
     REQUIRE(it.position() == num_digits - 1);
 
     cont = {all_ones, all_ones, 0};
+    beg = bit_iter_type(cont.begin());
+    end = bit_iter_type(cont.end());
     bit_iter_type mid_second(std::next(cont.begin()), num_digits / 2);
     it = bit::min_element(mid_second, end);
     REQUIRE(it.position() == 0);
     REQUIRE(std::next(mid_second.base()) == it.base());
 
     cont = {all_ones, all_ones, all_ones};
+    beg = bit_iter_type(cont.begin());
+    end = bit_iter_type(cont.end());
     it = bit::min_element(mid_second, end);
     REQUIRE(it.position() == num_digits / 2);
 
     cont = {bit::_shift_towards_msb(all_ones, 7), all_ones, all_ones};
+    beg = bit_iter_type(cont.begin());
+    end = bit_iter_type(cont.end());
     bit_iter_type pos_9_first(cont.begin(), 9);
     it = bit::min_element(pos_9_first, end);
     REQUIRE(it.position() == 9);

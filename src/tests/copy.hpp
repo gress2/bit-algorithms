@@ -39,7 +39,6 @@ TEMPLATE_TEST_CASE("Copy: One word copy of same size", "[copy]",
   ); 
 
   auto first = bit::bit_iterator<num_type*>(&bits_1, 0);
-  auto last = bit::bit_iterator<num_type*>(&bits_1+1, 0);
   num_type expected_after_copy = string_as_bits<num_type>(bit_str1);
 
   auto first2 = bit::bit_iterator<num_type*>(&bits_2, 0);
