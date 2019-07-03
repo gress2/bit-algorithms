@@ -22,6 +22,7 @@
 namespace bit {
 // ========================================================================== //
 
+
 template <std::size_t N> 
 struct index_t : std::integral_constant<std::size_t, N>
 {}; 
@@ -29,13 +30,6 @@ struct index_t : std::integral_constant<std::size_t, N>
 template <std::size_t N>
 inline constexpr index_t<N> index = index_t<N>{};
 
-/* still TODO (6/24):
-    -> add more tests. particularly for cases where word types are different
-    -> improve readability and/or documentation. clearly define how this should be used
-       and, more importantly, where this should not be used. i.e. the user needs
-       to check for the ranges are at least num_digits long.
-    -> doxygen ?
-*/
 template <
     class Iter1, 
     class Iter2, 
@@ -44,7 +38,8 @@ template <
        binary_digits<typename bit_iterator<Iter2>::word_type>::value),
       typename bit_iterator<Iter1>::word_type,
       typename bit_iterator<Iter2>::word_type
-    >::type
+    >::type,
+    bool Careful = false
 >
 class dual_range_reader {
 public:
@@ -76,9 +71,6 @@ private:
     std::size_t num_relevant_bits_;
     bool is_next_read_last_;
 
-    // sets is_next_read_last_ flag. should be called at the end of read_first()
-    // and read_last(). if is_next_read_last_ is true, your next read should be
-    // done using read_last(). otherwise, just call read().
     void check_if_next_read_is_last() {
         if (alignment_ == alignment_type_::both 
             || alignment_ == alignment_type_::first) {
@@ -136,6 +128,24 @@ public:
                 alignment_ = alignment_type_::second_pos_greater;
             }
         }
+
+        num_relevant_bits_ = num_digits;
+
+        if (Careful) {
+            if (alignment_ == alignment_type_::both) {
+                if (first1_.base() == last1_.base()) {
+                    num_relevant_bits_ = last1_.position() - first1_.position();
+                    is_next_read_last_ = true;
+                    if (first2_.base() != last2_.base()
+                        || last2_.position() - first1_.position() != num_relevant_bits_) {
+                        mismatched = true;
+                    }  
+                } 
+            } else if (alignment_ == alignment_type_::first) {
+                num_relevant_bits_
+              
+            } 
+        }
     }
 
     // changes the bit value used in padded reads
@@ -164,7 +174,6 @@ public:
     */
     read_pair_t read_first() {
         ReadType read1, read2;
-        num_relevant_bits_ = num_digits;
 
         if (alignment_ == alignment_type_::both) {
             read1 = *first1_.base();
@@ -197,6 +206,10 @@ public:
             alignment_ = alignment_type_::first;
             first1_ += num_relevant_bits_;
             first2_ += num_relevant_bits_;
+        }
+
+        if (Careful) {
+
         }
 
         check_if_next_read_is_last();
@@ -296,6 +309,25 @@ public:
         return N == 0 ? first1_.position() : first2_.position();
     }
 };
+
+template <
+  class Iter1, 
+  class Iter2,
+  class ReadType = typename std::conditional<
+      (binary_digits<typename bit_iterator<Iter1>::word_type>::value > 
+       binary_digits<typename bit_iterator<Iter2>::word_type>::value),
+      typename bit_iterator<Iter1>::word_type,
+      typename bit_iterator<Iter2>::word_type
+  >::type
+>
+dual_range_reader<Iter1, Iter2, ReadType, false> 
+get_safe_dual_range_reader(Iter1&& first1, Iter1&& last1, 
+    Iter2&& first2, Iter2&& last2) {
+    return dual_range_reader<Iter1, Iter2, ReadType, false>
+      (std::forward<Iter1>(first1), std::forward<Iter1>(last1),
+       std::forward<Iter2>(first2), std::forward<Iter2>(last2));
+}
+
 
 
 // ========================================================================== //

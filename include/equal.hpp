@@ -63,7 +63,6 @@ template <class ExecutionPolicy, class ForwardIt1, class ForwardIt2,
     return true;
 }
 
-// Status: on hold
 template <class InputIt1, class InputIt2>
 constexpr bool equal(bit_iterator<InputIt1> first1, bit_iterator<InputIt1> last1,
     bit_iterator<InputIt2> first2, bit_iterator<InputIt2> last2) {
@@ -92,20 +91,31 @@ constexpr bool equal(bit_iterator<InputIt1> first1, bit_iterator<InputIt1> last1
       }
     }
 
-    if (first1.base() == last1.base()) {
-        // not suitable for dual_range_reader
-        
+    dual_range_reader reader 
+        = get_safe_dual_range_reader(first1, last1, first2, last2);
 
-    } else {
+    decltype(reader)::read_pair_t read;
 
+    if (reader.is_next_read_last()) {
+        read = reader.read_first_padded();
+        if (reader.mismatched()) {
+            return false;
+        }
+
+        return read.first == read.second;
     }
 
-    if (first1.base() == last1.base()) {
-        std::cout << "this thing!\n";
+    while (!reader.is_next_read_last()) {
+        read = reader.read_padded();
+
+        if (read.first != read.second || reader.mismatched()) {
+            return false;
+        }
     }
 
-    (first1, last1, first2, last2);
-    return true;
+    read = reader.read_last_padded();
+
+    return read.first == read.second && !reader.mismatched();
 }
 
 // Status: to do
