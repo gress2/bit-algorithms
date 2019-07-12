@@ -25,12 +25,11 @@ namespace bit {
 
 // Status: needs revisions
 template <class ForwardIt>
-void fill(bit_iterator<ForwardIt> first, bit_iterator<ForwardIt> last, 
-    bit::bit_value bv) {
+void fill(bit_iterator<ForwardIt> first, bit_iterator<ForwardIt> last, bit_value bv) {
     bit_iterator<ForwardIt> cur = first;
 
     using word_type = typename bit_iterator<ForwardIt>::word_type;
-    constexpr std::size_t num_digits = bit::binary_digits<word_type>::value;
+    constexpr std::size_t num_digits = binary_digits<word_type>::value;
 
     while (cur != last) {
         if (last - cur >= num_digits) { // at least a full word remains

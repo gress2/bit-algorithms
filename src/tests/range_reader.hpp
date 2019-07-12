@@ -26,7 +26,7 @@
 
 
 // ------------------------ Range Reader Tests ------------------------- //
-
+/*
 TEMPLATE_TEST_CASE("dual range reader: read_first() is ok for single(full) word case", 
     "[dual_range_reader]", unsigned short, unsigned int, unsigned long, 
     unsigned long long) {
@@ -282,6 +282,7 @@ TEMPLATE_TEST_CASE("dual range reader: read_last() is fine for c-style arays",
     REQUIRE((mask & read.second) == _shift_towards_lsb(all_ones, num_digits - 5));
 }
 
+*/
 // -------------------------------------------------------------------------- //
 
 

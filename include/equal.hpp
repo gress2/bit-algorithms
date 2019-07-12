@@ -94,28 +94,18 @@ constexpr bool equal(bit_iterator<InputIt1> first1, bit_iterator<InputIt1> last1
     dual_range_reader reader 
         = get_safe_dual_range_reader(first1, last1, first2, last2);
 
-    decltype(reader)::read_pair_t read;
+    typename decltype(reader)::read_pair_t read;
 
-    if (reader.is_next_read_last()) {
-        read = reader.read_first_padded();
-        if (reader.mismatched()) {
-            return false;
-        }
+    while (reader.has_more()) {
+        read = reader.read();
 
-        return read.first == read.second;
-    }
-
-    while (!reader.is_next_read_last()) {
-        read = reader.read_padded();
-
-        if (read.first != read.second || reader.mismatched()) {
+        if (reader.is_mismatched() ||
+            read.first != read.second) {
             return false;
         }
     }
 
-    read = reader.read_last_padded();
-
-    return read.first == read.second && !reader.mismatched();
+    return true;
 }
 
 // Status: to do

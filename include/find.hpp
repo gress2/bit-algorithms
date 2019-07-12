@@ -21,7 +21,7 @@ namespace bit {
 // Status: needs revisions
 template <class InputIt>
 constexpr bit_iterator<InputIt> find(bit_iterator<InputIt> first,
-    bit_iterator<InputIt> last, bit::bit_value bv) {
+    bit_iterator<InputIt> last, bit_value bv) {
 
     using word_type = typename bit_iterator<InputIt>::word_type;
     std::size_t word_type_digits = binary_digits<word_type>::value;

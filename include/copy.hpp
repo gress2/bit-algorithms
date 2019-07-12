@@ -80,7 +80,7 @@ constexpr bit_iterator<OutputIt> copy(bit_iterator<InputIt> first,
                     (static_cast<dst_word_type>(1) << total_bits_to_copy) - 1)
         );
     }
-    return bit::bit_iterator<OutputIt>(it, total_bits_to_copy);
+    return bit_iterator<OutputIt>(it, total_bits_to_copy);
 }
 
 // Status: on hold

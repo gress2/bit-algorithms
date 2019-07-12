@@ -43,7 +43,7 @@ void print_as_binary(T num) {
 
 template <class T>
 std::string to_bit_string(T t) {
-    return std::bitset<bit::binary_digits<T>::value>(t).to_string();
+    return std::bitset<binary_digits<T>::value>(t).to_string();
 }
 
 // lord forgive me for creating this abomination
@@ -53,7 +53,7 @@ void display(T drr) {
 
     using pair_type = typename T::read_pair_t;
     using word_type = typename pair_type::first_type;
-    constexpr std::size_t num_digits = bit::binary_digits<word_type>::value;
+    constexpr std::size_t num_digits = binary_digits<word_type>::value;
     
     std::vector<std::string> first_word_bit_strings;
     std::vector<std::string> second_word_bit_strings;
