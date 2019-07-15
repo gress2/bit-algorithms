@@ -46,13 +46,15 @@ class dual_range_reader {
         using read_pair_t = std::pair<ReadType, ReadType>;
         static constexpr std::size_t num_digits = binary_digits<ReadType>::value;
     private:
-        std::size_t cursor_pos_1_, cursor_pos_2_;
-        std::size_t last_pos_1_, last_pos_2_;
+        
         std::size_t num_relevant_bits_;
         bit_value padding_value_;
         Iter1 word_cursor_1_, last_word_cursor_1_;
         Iter2 word_cursor_2_, last_word_cursor_2_;
-        std::pair<std::size_t, std::size_t> read_lengths_;
+        std::size_t cursor_pos_1_, cursor_pos_2_;
+        std::size_t last_pos_1_, last_pos_2_;
+
+        std::pair<std::size_t, std::size_t> next_read_lengths_;
         bool is_mismatched_;
         bool needs_lengths_updated_;
 
@@ -64,17 +66,17 @@ class dual_range_reader {
                 ReadType mask_1, mask_2;
                 if (padding_value_ == bit0) {
                     mask_1 = _shift_towards_lsb(static_cast<ReadType>(_all_ones()), 
-                        num_digits - read_lengths_.first);
+                        num_digits - prev_read_lengths_.first);
                     mask_2 = _shift_towards_lsb(static_cast<ReadType>(_all_ones()), 
-                        num_digits - read_lengths_.second);
+                        num_digits - prev_read_lengths_.second);
 
                     padded_reads.first = unpadded_reads.first & mask_1;
                     padded_reads.second = unpadded_reads.second & mask_2;
                 } else {
                     mask_1 = _shift_towards_lsb(static_cast<ReadType>(_all_ones()), 
-                        read_lengths_.first);
+                        prev_read_lengths_.first);
                     mask_2 = _shift_towards_lsb(static_cast<ReadType>(_all_ones()), 
-                        read_lengths_.second);
+                        prev_read_lengths_.second);
 
                     padded_reads.first = unpadded_reads.first | mask_1;
                     padded_reads.second = unpadded_reads.second | mask_2;
@@ -83,13 +85,13 @@ class dual_range_reader {
                 ReadType mask;
                 if (padding_value_ == bit0) {
                     mask = _shift_towards_lsb(static_cast<ReadType>(_all_ones()), 
-                        num_digits - read_lengths_.first);
+                        num_digits - prev_read_lengths_.first);
 
                     padded_reads.first = unpadded_reads & mask;
                     padded_reads.second = unpadded_reads & mask;
                 } else {
                     mask = _shift_towards_lsb(static_cast<ReadType>(_all_ones()), 
-                        read_lengths_.first);
+                        prev_read_lengths_.first);
 
                     padded_reads.first = unpadded_reads & mask;
                     padded_reads.second = unpadded_reads & mask;
@@ -102,11 +104,17 @@ class dual_range_reader {
         template <std::size_t N>
         struct alignment {};
 
+        using aligned_both = alignment<0>;
         using aligned_first = alignment<1>;
         using aligned_second = alignment<2>;
         using aligned_first_ahead = alignment<3>;
         using aligned_second_ahead = alignment<4>;
         using aligned_symmetric_unaligned = alignment<5>;
+
+        bool is_aligned_both() const {
+            return cursor_pos_1_ == 0
+                && cursor_pos_2_ == 0;
+        }
 
         bool is_aligned_first() const {
             return cursor_pos_1_ == 0;
@@ -129,8 +137,10 @@ class dual_range_reader {
         }
 
         template <class Lambda>
-        auto dispatch_by_alignment(Lambda lambda) {
-            if (is_aligned_first()) {
+        auto dispatch_by_alignment(Lambda lambda) const {
+            if (is_aligned_both()) {
+                return lambda(aligned_both{});
+            } else if (is_aligned_first()) {
                 return lambda(aligned_first{});
             } else if (is_aligned_second()) {
                 return lambda(aligned_second{});
@@ -144,7 +154,7 @@ class dual_range_reader {
         }
 
         template <std::size_t N>
-        auto get_positionals() {
+        auto get_positionals() const {
             if (N == 1) {
                 return std::make_tuple(
                     word_cursor_1_, cursor_pos_1_, 
@@ -158,8 +168,31 @@ class dual_range_reader {
             }
         }
 
+        std::pair<std::size_t, std::size_t> get_read_lengths(aligned_both) const {
+            std::size_t first_len, second_len;
+
+            if (word_cursor_1_ == last_word_cursor_1_) {
+                first_len = last_pos_1_ - cursor_pos_1_;
+            } else {
+                first_len = num_digits;
+            }
+
+            if (Careful) {
+                if (word_cursor_2_ == last_word_cursor_2_) {
+                    second_len = last_pos_2_ - cursor_pos_2_;
+                } else {
+                    second_len = num_digits;
+                }
+            } else {
+                second_len = first_len;
+            }
+
+            return std::make_pair(first_len, second_len);
+        }
+
+
         template <std::size_t Aligned, std::size_t Unaligned>
-        std::pair<std::size_t, std::size_t> get_read_lengths_one_aligned() {
+        std::pair<std::size_t, std::size_t> get_next_read_lengths_one_aligned() const {
             std::size_t aligned_len, unaligned_len;
 
             auto [cursor_aligned, pos_aligned, 
@@ -188,17 +221,17 @@ class dual_range_reader {
             return std::make_pair(aligned_len, unaligned_len);
         }
 
-        std::pair<std::size_t, std::size_t> get_read_lengths(aligned_first) {
-            return get_read_lengths_one_aligned<1, 2>();
+        std::pair<std::size_t, std::size_t> get_next_read_lengths(aligned_first) const {
+            return get_next_read_lengths_one_aligned<1, 2>();
         }
 
-        std::pair<std::size_t, std::size_t> get_read_lengths(aligned_second) {
+        std::pair<std::size_t, std::size_t> get_next_read_lengths(aligned_second) const {
             std::pair<std::size_t, std::size_t> one_aligned_lens = 
                 get_read_lengths_one_aligned<2, 1>();
             return std::make_pair(one_aligned_lens.second, one_aligned_lens.first);
         }
 
-        std::pair<std::size_t, std::size_t> get_read_lengths(aligned_symmetric_unaligned) {
+        std::pair<std::size_t, std::size_t> get_next_read_lengths(aligned_symmetric_unaligned) const {
             std::size_t first_len, second_len;
 
             if (word_cursor_1_ == last_word_cursor_1_) {
@@ -219,7 +252,7 @@ class dual_range_reader {
         }
 
         template <std::size_t Ahead, std::size_t Behind>
-        std::pair<std::size_t, std::size_t> get_read_lengths_ahead_behind() {
+        std::pair<std::size_t, std::size_t> get_read_lengths_ahead_behind() const {
             auto [cursor_ahead, pos_ahead, 
                 last_cursor_ahead, last_pos_ahead] = get_positionals<Ahead>();
             auto [cursor_behind, pos_behind, 
@@ -249,13 +282,13 @@ class dual_range_reader {
             return std::make_pair(ahead_len, behind_len);
         } 
 
-        std::pair<std::size_t, std::size_t> get_read_lengths(aligned_first_ahead) {
-            return get_read_lengths_ahead_behind<1, 2>();
+        std::pair<std::size_t, std::size_t> get_read_lengths(aligned_first_ahead) const {
+            return get_next_read_lengths_ahead_behind<1, 2>();
         }
 
-        std::pair<std::size_t, std::size_t> get_read_lengths(aligned_second_ahead) {
+        std::pair<std::size_t, std::size_t> get_read_lengths(aligned_second_ahead) const {
             std::pair<std::size_t, std::size_t> ahead_behind_lens =
-                get_read_lengths_ahead_behind<2, 1>();
+                get_next_read_lengths_ahead_behind<2, 1>();
             return std::make_pair(ahead_behind_lens.second, ahead_behind_lens.first);
         }
 
@@ -271,21 +304,22 @@ class dual_range_reader {
         {
         }
 
-        std::pair<std::size_t, std::size_t> get_read_lengths() const {
-            if (needs_lengths_updated_) {
-                read_lengths_ = dispatch_by_alignment(
-                    [this] (auto alignment) { return get_read_lengths(alignment); }
+        std::pair<std::size_t, std::size_t> get_next_read_lengths() {
+            if (needs_next_lengths_updated_) {
+                std::cout << "updating lengths.\n";
+                next_read_lengths_ = dispatch_by_alignment(
+                    [this] (auto alignment) { return this->get_read_lengths(alignment); }
                 );
             }
-            return read_lengths_;
+            return next_read_lengths_;
         }
 
         read_pair_t read() {
-            if (needs_lengths_updated_) {
-                read_lengths_ = get_read_lengths();
+            if (needs_next_lengths_updated_) {
+                next_read_lengths_ = get_next_read_lengths();
             }
 
-            if (read_lengths_.first != read_lengths_.second) {
+            if (next_read_lengths_.first != next_read_lengths_.second) {
                 is_mismatched_ = true;
             }
 
@@ -294,18 +328,20 @@ class dual_range_reader {
             std::size_t new_pos_1 = (cursor_pos_1_ + read_lengths_.first) % num_digits;
             std::size_t new_pos_2 = (cursor_pos_2_ + read_lengths_.second) % num_digits;
 
-            if (new_pos_1 < cursor_pos_1_) {
+            if (new_pos_1 <= cursor_pos_1_) {
                 word_cursor_1_++;
             }
 
-            if (new_pos_2 < cursor_pos_2_) {
+            if (new_pos_2 <= cursor_pos_2_) {
                 word_cursor_2_++;
             }
 
             cursor_pos_1_ = new_pos_1;
             cursor_pos_2_ = new_pos_2;
 
-            needs_lengths_updated_ = true;
+            prev_read_lengths_ = next_read_lengths_;
+
+            needs_next_lengths_updated_ = true;
 
             return reads;
         }
@@ -315,8 +351,12 @@ class dual_range_reader {
             return pad_reads(unpadded_reads);
         }
 
-        bool has_more() const {
-            std::pair<std::size_t, std::size_t> read_lengths = get_read_lengths();
+        bool has_more() {
+            std::cout << "calling into get_read_lengths\n";
+            std::pair<std::size_t, std::size_t> read_lengths = get_next_read_lengths();
+
+            std::cout << read_lengths.first << std::endl;
+            std::cout << read_lengths.second << std::endl;
             
             return read_lengths.first > 0 || read_lengths.second > 0;
         }

@@ -26,8 +26,8 @@
 
 
 // ------------------------ Range Reader Tests ------------------------- //
-/*
-TEMPLATE_TEST_CASE("dual range reader: read_first() is ok for single(full) word case", 
+
+TEMPLATE_TEST_CASE("dual range reader: read() is ok for single(full) word case", 
     "[dual_range_reader]", unsigned short, unsigned int, unsigned long, 
     unsigned long long) {
 
@@ -43,10 +43,20 @@ TEMPLATE_TEST_CASE("dual range reader: read_first() is ok for single(full) word 
 
     dual_range_reader reader1(beg_x, end_x, beg_y, end_y);
 
-    auto pair = reader1.read_first();
+    REQUIRE(reader1.has_more());
+
+    auto pair = reader1.read();
     REQUIRE(pair.first == 3929);
     REQUIRE(pair.second == 2183);
+
+    std::pair<std::size_t, std::size_t> read_lens = reader1.get_read_lengths();
+
+    REQUIRE(read_lens.first == read_lens.second);
+    REQUIRE(!reader1.has_more());
+    REQUIRE(!reader1.is_mismatched());
 }
+
+/*
 
 TEMPLATE_PRODUCT_TEST_CASE("dual range reader: read_first() is ok for std containers", 
     "[template][product]", (std::vector, std::list, std::forward_list),
