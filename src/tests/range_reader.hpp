@@ -49,18 +49,16 @@ TEMPLATE_TEST_CASE("dual range reader: read() is ok for single(full) word case",
     REQUIRE(pair.first == 3929);
     REQUIRE(pair.second == 2183);
 
-    std::pair<std::size_t, std::size_t> read_lens = reader1.get_read_lengths();
+    std::pair<std::size_t, std::size_t> read_lens = reader1.get_next_read_lengths();
 
     REQUIRE(read_lens.first == read_lens.second);
     REQUIRE(!reader1.has_more());
     REQUIRE(!reader1.is_mismatched());
 }
 
-/*
-
 TEMPLATE_PRODUCT_TEST_CASE("dual range reader: read_first() is ok for std containers", 
-    "[template][product]", (std::vector, std::list, std::forward_list),
-    (unsigned short, unsigned int, unsigned long)) {
+    "[template][product]", (std::vector/*, std::list, std::forward_list*/),
+    (unsigned short/*, unsigned int, unsigned long*/)) {
 
     using namespace bit;
     
@@ -79,32 +77,47 @@ TEMPLATE_PRODUCT_TEST_CASE("dual range reader: read_first() is ok for std contai
 
     dual_range_reader reader(c1_beg, c1_end, c2_beg, c2_end);
 
-    std::pair<value_type, value_type> read = reader.read_first();
+    std::pair<value_type, value_type> read = reader.read();
 
     REQUIRE(read.first == 3);
     REQUIRE(read.second == 8);
 
-    REQUIRE(!reader.is_next_read_last());
+    REQUIRE(reader.has_more());
 
     container_type c3 = {static_cast<value_type>(_all_ones()), 0, 1024, 0};
     constexpr std::size_t num_digits = binary_digits<value_type>::value;
 
     bit_iter_type c3a_beg(c3.begin(), num_digits / 2);
     bit_iter_type c3a_end(std::next(c3.begin(), 2), 0);
-    bit_iter_type c3b_beg(c3.begin(), num_digits / 2 + 1);
+    
+    bit_iter_type c3b_beg(c3.begin(), (num_digits / 2) + 1);
     bit_iter_type c3b_end(std::next(c3.begin(), 2), 1);
 
     dual_range_reader reader2(c3a_beg, c3a_end, c3b_beg, c3b_end);
 
-    auto read2 = reader2.read_first();
+    display(reader2);
+
+    auto read2 = reader2.read_padded();
+
+    std::bitset<num_digits> bs1(read2.first);
+    std::bitset<num_digits> bs2(read2.second);
+
+    std::cout << bs1 << std::endl;
+    std::cout << bs2 << std::endl;
+    
     REQUIRE(read2.first == 
         _shift_towards_lsb(static_cast<value_type>(_all_ones()), num_digits / 2));
     REQUIRE(read2.second ==
-        _shift_towards_lsb(static_cast<value_type>(_all_ones()), num_digits / 2 + 1));
+        _shift_towards_lsb(static_cast<value_type>(_all_ones()), (num_digits / 2) + 1));
+
+    
+
 
     REQUIRE(reader2.get_position(index<0>) == 0);
-    REQUIRE(reader2.get_position(index<1>) == 1); 
+    REQUIRE(reader2.get_position(index<1>) == 1);
 }
+
+/*
 
 TEMPLATE_TEST_CASE("dual range reader: read_first() is ok for c-style arrays",
     "[dual_range_reader]", unsigned short, unsigned int, unsigned long) {

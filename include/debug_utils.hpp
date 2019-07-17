@@ -68,9 +68,9 @@ void display(T drr) {
     first_positions.push_back(drr.get_position(index<0>));
     second_positions.push_back(drr.get_position(index<1>));
 
-    drr.read_first();
+    drr.read();
     
-    while (!drr.is_next_read_last()) {
+    while (drr.has_more()) {
         first_word_bit_strings.push_back(
             to_bit_string(*(drr.get_base_iterator(index<0>))));
         second_word_bit_strings.push_back(
@@ -87,16 +87,16 @@ void display(T drr) {
     first_positions.push_back(drr.get_position(index<0>));
     second_positions.push_back(drr.get_position(index<1>));
 
-    drr.read_last();
+    drr.read();
 
-    std::size_t last_read_rel_bits = drr.get_num_relevant_bits();
+    std::size_t last_read_rel_bits = drr.get_prev_read_lengths().first;
 
     if (last_read_rel_bits + first_positions.back() > num_digits) {
         first_positions.push_back(last_read_rel_bits + first_positions.back() - num_digits); 
         first_word_bit_strings.push_back(
             to_bit_string(*std::next(drr.get_base_iterator(index<0>))));
     } else {
-        first_positions.push_back(drr.get_num_relevant_bits() + first_positions.back());
+        first_positions.push_back(drr.get_prev_read_lengths().first + first_positions.back());
     }
 
     if (last_read_rel_bits + second_positions.back() > num_digits) {
@@ -104,7 +104,7 @@ void display(T drr) {
         second_word_bit_strings.push_back(
             to_bit_string(*std::next(drr.get_base_iterator(index<1>))));
     } else {
-        second_positions.push_back(drr.get_num_relevant_bits() + second_positions.back());
+        second_positions.push_back(drr.get_prev_read_lengths().first + second_positions.back());
     }
 
     for (std::size_t i = 0; i < first_positions.size(); i++) {
